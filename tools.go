@@ -11,7 +11,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -155,19 +154,6 @@ func Post(params Req) (data []byte, res *http.Response, err error) {
  */
 func Json_encode(params interface{}) (data []byte, err error) {
 	data, err = json.Marshal(params)
-	return
-}
-
-/**
- * [Json_decode json字符串解码]
- * @作者    como
- * @时间    2018-09-24
- * @版本    1.0.0
- * @param {[type]}    jsonstr string         [description]
- * @param {[type]}    curtype interface{}) (err          error [description]
- */
-func Json_decode(jsonstr string, curtype interface{}) (err error) {
-	err = json.Unmarshal([]byte(jsonstr), curtype)
 	return
 }
 
@@ -327,8 +313,12 @@ func Trim(str string) (data string) {
  * @param {[type]}    path string) (str string, err error [description]
  */
 func File_get_contents(path string) (str string, err error) {
-	_, err = url.Parse(path)
+	var exists bool
+	exists, err = File_exists(path)
 	if err != nil {
+		return
+	}
+	if exists {
 		str, err = Fread(path)
 		return
 	}
@@ -346,10 +336,27 @@ func File_get_contents(path string) (str string, err error) {
 }
 
 /**
+ * [File_exists 判断文件是否存在]
+ * @作者    como
+ * @时间    2018-10-01
+ * @版本    1.0.0
+ * @param {[type]}    path string) (bool, error [description]
+ */
+func File_exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
+}
+
+/**
  * [File_put_contens 实现了php的file_put_contens]
  * @作者    como
  * @时间    2018-09-26
- * @版权    思智捷网上商城管理系统
  * @版本    1.0.0
  * @param {[type]}    path [description]
  * @param {[type]}    data string)       (err error [description]
@@ -380,12 +387,11 @@ func Fread(path string) (str string, err error) {
 	}
 	defer f.Close()
 	var data []byte
-	var num int
-	num, err = f.Read(data)
+	data, err = ioutil.ReadAll(f)
 	if err != nil {
 		return
 	}
-	str = string(data[:num])
+	str = string(data)
 	return
 }
 
