@@ -267,14 +267,13 @@ func Base64_decode(str string) (data []byte) {
  * @param {[type]}    max int64)        (int64 [description]
  */
 func Mt_rand(min, max int) (num int) {
-	rand.Seed(time.Now().UnixNano())
-	for {
-		tmp := rand.Intn(max)
-		if tmp >= min {
-			num = tmp
-			break
-		}
+	if min >= max || min == 0 || max == 0 {
+		num = max
+		return
 	}
+	rand.Seed(time.Now().UnixNano())
+	tmp := rand.Intn(max - min)
+	num = tmp + min
 	return
 }
 
